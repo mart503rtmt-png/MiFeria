@@ -4,151 +4,155 @@ import MiFeria.Modelo.Categoria;
 import MiFeria.Modelo.Transaccion;
 import MiFeria.Modelo.Usuario;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-// GestorFinanciero es la clase mas importante de la primera entrega
-// Aqui vive toda la logica: agregar transacciones, calcular balance, filtrar, etc.
+// GestorFinanciero contiene toda la logica principal de la app
+// Usa AlmacenamientoLocal para que los datos persistan entre sesiones
 
 public class GestorFinanciero {
 
-    // Listas donde se guardan los datos en memoria
-    // (en entregas futuras esto se conectaria a una base de datos)
     private List<Transaccion> transacciones;
-    private List<Categoria> categorias;
-    private Usuario usuarioActivo; // el usuario que inicio sesion
+    private List<Categoria>   categorias;
+    private Usuario           usuarioActivo;
+    private int               contadorId;
 
-    // Constructor: inicializa las listas vacias
     public GestorFinanciero() {
-        this.transacciones = new ArrayList<>();
-        this.categorias = new ArrayList<>();
+        this.categorias    = new ArrayList<>();
         this.usuarioActivo = null;
+
+        // Carga transacciones guardadas al iniciar
+        this.transacciones = AlmacenamientoLocal.cargarTransacciones();
+
+        // El id empieza desde el ultimo guardado + 1
+        this.contadorId = calcularUltimoId() + 1;
+
+        cargarCategoriasPorDefecto();
+    }
+
+    // Busca el id mas alto entre las transacciones cargadas
+    private int calcularUltimoId() {
+        int maxId = 0;
+        for (Transaccion t : transacciones) {
+            if (t.getId() > maxId) maxId = t.getId();
+        }
+        return maxId;
     }
 
     // ==================== USUARIO ====================
 
-    // Simula el login: busca si el usuario existe y la contrasena es correcta
-    public boolean iniciarSesion(String correo, String contrasena) {
-        // Por ahora creamos un usuario de prueba hardcodeado
-        // En entregas futuras esto vendria de una base de datos
-        Usuario usuarioPrueba = new Usuario(1, "Jose Argueta", correo, "1234");
-
-        if (usuarioPrueba.getCorreo().equals(correo) &&
-            usuarioPrueba.validarContrasena(contrasena)) {
-            this.usuarioActivo = usuarioPrueba;
-            return true; // login exitoso
+    // Registra un usuario nuevo y lo guarda en el archivo
+    public boolean registrarUsuario(String nombre, String correo, String contrasena) {
+        if (AlmacenamientoLocal.correoExiste(correo)) {
+            System.out.println("Ese correo ya esta registrado.");
+            return false;
         }
-        return false; // login fallido
+        int nuevoId = (int)(Math.random() * 9000) + 1000;
+        Usuario nuevo = new Usuario(nuevoId, nombre, correo, contrasena);
+        AlmacenamientoLocal.guardarUsuario(nuevo);
+        System.out.println("Usuario registrado: " + nombre);
+        return true;
     }
 
-    public Usuario getUsuarioActivo() {
-        return usuarioActivo;
+    // Inicia sesion verificando correo y contrasena contra el archivo
+    public boolean iniciarSesion(String correo, String contrasena) {
+        Usuario encontrado = AlmacenamientoLocal.buscarUsuarioPorCorreo(correo);
+        if (encontrado != null && encontrado.validarContrasena(contrasena)) {
+            this.usuarioActivo = encontrado;
+            return true;
+        }
+        return false;
     }
+
+    public void cerrarSesion() { this.usuarioActivo = null; }
+
+    public Usuario getUsuarioActivo() { return usuarioActivo; }
 
     // ==================== CATEGORIAS ====================
 
-    // Agregar una nueva categoria a la lista
-    public void agregarCategoria(Categoria categoria) {
-        categorias.add(categoria);
-    }
+    public void agregarCategoria(Categoria c) { categorias.add(c); }
 
-    // Devuelve todas las categorias (util para llenar un ComboBox en JavaFX)
-    public List<Categoria> getCategorias() {
-        return categorias;
-    }
+    public List<Categoria> getCategorias() { return categorias; }
 
-    // Busca una categoria por su id
     public Categoria buscarCategoriaPorId(int id) {
         for (Categoria c : categorias) {
-            if (c.getId() == id) {
-                return c;
-            }
+            if (c.getId() == id) return c;
         }
-        return null; // si no la encuentra devuelve null
+        return null;
     }
 
-    // Carga categorias basicas para que la app tenga datos desde el inicio
     public void cargarCategoriasPorDefecto() {
-        agregarCategoria(new Categoria(1, "Alimentacion", "#4CAF50"));
-        agregarCategoria(new Categoria(2, "Transporte",   "#2196F3"));
-        agregarCategoria(new Categoria(3, "Salud",        "#F44336"));
+        agregarCategoria(new Categoria(1, "Alimentacion",    "#4CAF50"));
+        agregarCategoria(new Categoria(2, "Transporte",      "#2196F3"));
+        agregarCategoria(new Categoria(3, "Salud",           "#F44336"));
         agregarCategoria(new Categoria(4, "Entretenimiento", "#9C27B0"));
-        agregarCategoria(new Categoria(5, "Salario",      "#FF9800"));
-        agregarCategoria(new Categoria(6, "Servicios",    "#607D8B"));
-        agregarCategoria(new Categoria(7, "Otros",        "#795548"));
+        agregarCategoria(new Categoria(5, "Salario",         "#FF9800"));
+        agregarCategoria(new Categoria(6, "Servicios",       "#607D8B"));
+        agregarCategoria(new Categoria(7, "Otros",           "#795548"));
     }
 
     // ==================== TRANSACCIONES ====================
 
-    // Agregar una nueva transaccion a la lista
-    public void agregarTransaccion(Transaccion transaccion) {
-        transacciones.add(transaccion);
+    // Agrega una transaccion, la guarda en archivo y en la lista
+    public void agregarTransaccion(double monto, String descripcion,
+                                   String tipo, int idCategoria) {
+        Transaccion nueva = new Transaccion(
+            contadorId, monto, descripcion,
+            LocalDate.now(), tipo, idCategoria
+        );
+        transacciones.add(nueva);
+        AlmacenamientoLocal.guardarTransaccion(nueva);
+        contadorId++;
+        System.out.println("Guardada: " + nueva);
     }
 
-    // Devuelve todas las transacciones
-    public List<Transaccion> listarTransacciones() {
-        return transacciones;
+    // Elimina de la lista y del archivo
+    public void eliminarTransaccion(int id) {
+        transacciones.removeIf(t -> t.getId() == id);
+        AlmacenamientoLocal.eliminarTransaccion(id);
+        System.out.println("Eliminada transaccion id: " + id);
     }
 
-    // Filtra y devuelve solo los ingresos
+    public List<Transaccion> listarTransacciones() { return transacciones; }
+
     public List<Transaccion> listarIngresos() {
-        List<Transaccion> ingresos = new ArrayList<>();
-        for (Transaccion t : transacciones) {
-            if (t.getTipo().equals("INGRESO")) {
-                ingresos.add(t);
-            }
-        }
-        return ingresos;
+        List<Transaccion> resultado = new ArrayList<>();
+        for (Transaccion t : transacciones)
+            if (t.getTipo().equals("INGRESO")) resultado.add(t);
+        return resultado;
     }
 
-    // Filtra y devuelve solo los gastos
     public List<Transaccion> listarGastos() {
-        List<Transaccion> gastos = new ArrayList<>();
-        for (Transaccion t : transacciones) {
-            if (t.getTipo().equals("GASTO")) {
-                gastos.add(t);
-            }
-        }
-        return gastos;
+        List<Transaccion> resultado = new ArrayList<>();
+        for (Transaccion t : transacciones)
+            if (t.getTipo().equals("GASTO")) resultado.add(t);
+        return resultado;
     }
 
-    // Filtra transacciones por categoria
     public List<Transaccion> filtrarPorCategoria(int idCategoria) {
         List<Transaccion> resultado = new ArrayList<>();
-        for (Transaccion t : transacciones) {
-            if (t.getIdCategoria() == idCategoria) {
-                resultado.add(t);
-            }
-        }
+        for (Transaccion t : transacciones)
+            if (t.getIdCategoria() == idCategoria) resultado.add(t);
         return resultado;
     }
 
     // ==================== CALCULOS ====================
 
-    // Suma todos los ingresos
     public double calcularTotalIngresos() {
         double total = 0;
-        for (Transaccion t : transacciones) {
-            if (t.getTipo().equals("INGRESO")) {
-                total += t.getMonto();
-            }
-        }
+        for (Transaccion t : transacciones)
+            if (t.getTipo().equals("INGRESO")) total += t.getMonto();
         return total;
     }
 
-    // Suma todos los gastos
     public double calcularTotalGastos() {
         double total = 0;
-        for (Transaccion t : transacciones) {
-            if (t.getTipo().equals("GASTO")) {
-                total += t.getMonto();
-            }
-        }
+        for (Transaccion t : transacciones)
+            if (t.getTipo().equals("GASTO")) total += t.getMonto();
         return total;
     }
 
-    // Calcula el balance: ingresos menos gastos
-    // Si es positivo tienes dinero, si es negativo estas en deficit
     public double calcularBalance() {
         return calcularTotalIngresos() - calcularTotalGastos();
     }

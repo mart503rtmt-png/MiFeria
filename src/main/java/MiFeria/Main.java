@@ -1,72 +1,286 @@
 package MiFeria;
 
 import MiFeria.Logica.GestorFinanciero;
+import MiFeria.Modelo.Categoria;
 import MiFeria.Modelo.Transaccion;
 
-import java.time.LocalDate;
+import java.util.Scanner;
 
-// Esta clase sirve para probar que todo funciona correctamente
-// Simula lo que haria la app sin necesidad de la interfaz grafica
+// Main con menu interactivo: el usuario escribe todos los datos
+// No hay nada hardcodeado, todo lo ingresa el usuario desde el teclado
 
 public class Main {
 
+    static Scanner scanner = new Scanner(System.in);
+    static GestorFinanciero gestor = new GestorFinanciero();
+
     public static void main(String[] args) {
+        System.out.println("=================================");
+        System.out.println("  Bienvenido a la App Financiera ");
+        System.out.println("=================================");
+        menuAcceso();
+    }
 
-        // 1. Crear el gestor y cargar categorias por defecto
-        GestorFinanciero gestor = new GestorFinanciero();
-        gestor.cargarCategoriasPorDefecto();
+    // ==================== MENU DE ACCESO ====================
 
-        // 2. Simular un login
-        boolean loginExitoso = gestor.iniciarSesion("jose@mail.com", "1234");
-        if (loginExitoso) {
-            System.out.println("Login exitoso. Bienvenido, " +
-                gestor.getUsuarioActivo().getNombre());
+    static void menuAcceso() {
+        boolean corriendo = true;
+        while (corriendo) {
+            System.out.println("\n1. Registrarse");
+            System.out.println("2. Iniciar sesion");
+            System.out.println("3. Salir");
+            System.out.print("Elegir opcion: ");
+            String opcion = scanner.nextLine().trim();
+
+            switch (opcion) {
+                case "1": registrarse(); break;
+                case "2":
+                    if (iniciarSesion()) menuPrincipal();
+                    break;
+                case "3":
+                    System.out.println("Hasta luego!");
+                    corriendo = false;
+                    break;
+                default:
+                    System.out.println("Opcion no valida, intenta de nuevo.");
+            }
+        }
+    }
+
+    // ==================== REGISTRO ====================
+
+    static void registrarse() {
+        System.out.println("\n--- REGISTRO ---");
+
+        System.out.print("Nombre completo: ");
+        String nombre = scanner.nextLine().trim();
+
+        System.out.print("Correo: ");
+        String correo = scanner.nextLine().trim();
+
+        System.out.print("Contrasena: ");
+        String contrasena = scanner.nextLine().trim();
+
+        boolean registrado = gestor.registrarUsuario(nombre, correo, contrasena);
+        if (registrado) {
+            System.out.println("Cuenta creada. Ya puedes iniciar sesion.");
+        }
+    }
+
+    // ==================== LOGIN ====================
+
+    static boolean iniciarSesion() {
+        System.out.println("\n--- INICIAR SESION ---");
+
+        System.out.print("Correo: ");
+        String correo = scanner.nextLine().trim();
+
+        System.out.print("Contrasena: ");
+        String contrasena = scanner.nextLine().trim();
+
+        boolean ok = gestor.iniciarSesion(correo, contrasena);
+        if (ok) {
+            System.out.println("Bienvenido, " + gestor.getUsuarioActivo().getNombre() + "!");
+            return true;
         } else {
             System.out.println("Correo o contrasena incorrectos.");
-            return; // detener si el login falla
+            return false;
+        }
+    }
+
+    // ==================== MENU PRINCIPAL ====================
+
+    static void menuPrincipal() {
+        boolean corriendo = true;
+        while (corriendo) {
+            System.out.println("\n=== MENU PRINCIPAL ===");
+            System.out.println("Usuario: " + gestor.getUsuarioActivo().getNombre());
+            System.out.println("----------------------");
+            System.out.println("1. Agregar transaccion");
+            System.out.println("2. Ver todas mis transacciones");
+            System.out.println("3. Ver resumen (balance)");
+            System.out.println("4. Filtrar por categoria");
+            System.out.println("5. Eliminar transaccion");
+            System.out.println("6. Cerrar sesion");
+            System.out.print("Elegir opcion: ");
+            String opcion = scanner.nextLine().trim();
+
+            switch (opcion) {
+                case "1": agregarTransaccion(); break;
+                case "2": verTransacciones();   break;
+                case "3": verResumen();          break;
+                case "4": filtrarCategoria();    break;
+                case "5": eliminarTransaccion(); break;
+                case "6":
+                    gestor.cerrarSesion();
+                    System.out.println("Sesion cerrada.");
+                    corriendo = false;
+                    break;
+                default:
+                    System.out.println("Opcion no valida.");
+            }
+        }
+    }
+
+    // ==================== AGREGAR TRANSACCION ====================
+
+    static void agregarTransaccion() {
+        System.out.println("\n--- NUEVA TRANSACCION ---");
+
+        // Elegir tipo
+        System.out.println("Tipo:");
+        System.out.println("1. Ingreso");
+        System.out.println("2. Gasto");
+        System.out.print("Elegir: ");
+        String tipoOpcion = scanner.nextLine().trim();
+
+        String tipo;
+        if (tipoOpcion.equals("1")) {
+            tipo = "INGRESO";
+        } else if (tipoOpcion.equals("2")) {
+            tipo = "GASTO";
+        } else {
+            System.out.println("Opcion no valida.");
+            return;
         }
 
-        // 3. Agregar algunos ingresos de prueba
-        // new Transaccion(id, monto, descripcion, fecha, tipo, idCategoria)
-        gestor.agregarTransaccion(new Transaccion(
-            1, 500.00, "Salario quincenal",
-            LocalDate.now(), "INGRESO", 5
-        ));
-        gestor.agregarTransaccion(new Transaccion(
-            2, 50.00, "Trabajo freelance",
-            LocalDate.now(), "INGRESO", 5
-        ));
+        // Ingresar monto
+        System.out.print("Monto ($): ");
+        double monto;
+        try {
+            monto = Double.parseDouble(scanner.nextLine().trim());
+            if (monto <= 0) {
+                System.out.println("El monto debe ser mayor a 0.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Monto invalido, debe ser un numero. Ej: 25.50");
+            return;
+        }
 
-        // 4. Agregar algunos gastos de prueba
-        gestor.agregarTransaccion(new Transaccion(
-            3, 80.00, "Compra del super",
-            LocalDate.now(), "GASTO", 1
-        ));
-        gestor.agregarTransaccion(new Transaccion(
-            4, 30.00, "Pasajes de la semana",
-            LocalDate.now(), "GASTO", 2
-        ));
-        gestor.agregarTransaccion(new Transaccion(
-            5, 15.00, "Cine con amigos",
-            LocalDate.now(), "GASTO", 4
-        ));
+        // Ingresar descripcion
+        System.out.print("Descripcion (ej: compra del super): ");
+        String descripcion = scanner.nextLine().trim();
+        if (descripcion.isEmpty()) {
+            System.out.println("La descripcion no puede estar vacia.");
+            return;
+        }
 
-        // 5. Mostrar resumen en consola
-        System.out.println("\n===== RESUMEN FINANCIERO =====");
-        System.out.println("Total ingresos : $" + gestor.calcularTotalIngresos());
-        System.out.println("Total gastos   : $" + gestor.calcularTotalGastos());
-        System.out.println("Balance actual : $" + gestor.calcularBalance());
+        // Mostrar categorias y elegir
+        System.out.println("Categorias:");
+        for (Categoria c : gestor.getCategorias()) {
+            System.out.println("  " + c.getId() + ". " + c.getNombre());
+        }
+        System.out.print("Numero de categoria: ");
+        int idCategoria;
+        try {
+            idCategoria = Integer.parseInt(scanner.nextLine().trim());
+            if (gestor.buscarCategoriaPorId(idCategoria) == null) {
+                System.out.println("Categoria no valida.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Numero invalido.");
+            return;
+        }
 
-        // 6. Mostrar todas las transacciones
-        System.out.println("\n===== TODAS LAS TRANSACCIONES =====");
+        gestor.agregarTransaccion(monto, descripcion, tipo, idCategoria);
+        System.out.println("Transaccion guardada correctamente.");
+    }
+
+    // ==================== VER TRANSACCIONES ====================
+
+    static void verTransacciones() {
+        System.out.println("\n--- MIS TRANSACCIONES ---");
+        if (gestor.listarTransacciones().isEmpty()) {
+            System.out.println("No hay transacciones registradas aun.");
+            return;
+        }
         for (Transaccion t : gestor.listarTransacciones()) {
-            System.out.println(t);
+            Categoria cat = gestor.buscarCategoriaPorId(t.getIdCategoria());
+            String nombreCat = (cat != null) ? cat.getNombre() : "Sin categoria";
+            System.out.println("ID:" + t.getId() +
+                    " | " + t.getTipo() +
+                    " | $" + t.getMonto() +
+                    " | " + t.getDescripcion() +
+                    " | " + nombreCat +
+                    " | " + t.getFecha());
+        }
+    }
+
+    // ==================== VER RESUMEN ====================
+
+    static void verResumen() {
+        System.out.println("\n--- RESUMEN FINANCIERO ---");
+        System.out.printf("Total ingresos : $%.2f%n", gestor.calcularTotalIngresos());
+        System.out.printf("Total gastos   : $%.2f%n", gestor.calcularTotalGastos());
+        System.out.printf("Balance actual : $%.2f%n", gestor.calcularBalance());
+        if (gestor.calcularBalance() >= 0) {
+            System.out.println("Estado: Positivo, vas bien!");
+        } else {
+            System.out.println("Estado: Negativo, cuidado con los gastos!");
+        }
+    }
+
+    // ==================== FILTRAR POR CATEGORIA ====================
+
+    static void filtrarCategoria() {
+        System.out.println("\n--- FILTRAR POR CATEGORIA ---");
+        for (Categoria c : gestor.getCategorias()) {
+            System.out.println("  " + c.getId() + ". " + c.getNombre());
+        }
+        System.out.print("Numero de categoria: ");
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Numero invalido.");
+            return;
         }
 
-        // 7. Mostrar solo gastos de alimentacion (categoria id=1)
-        System.out.println("\n===== GASTOS DE ALIMENTACION =====");
-        for (Transaccion t : gestor.filtrarPorCategoria(1)) {
-            System.out.println(t);
+        Categoria cat = gestor.buscarCategoriaPorId(id);
+        if (cat == null) {
+            System.out.println("Categoria no encontrada.");
+            return;
+        }
+
+        System.out.println("Transacciones de: " + cat.getNombre());
+        java.util.List<Transaccion> lista = gestor.filtrarPorCategoria(id);
+        if (lista.isEmpty()) {
+            System.out.println("No hay transacciones en esta categoria.");
+            return;
+        }
+        for (Transaccion t : lista) {
+            System.out.println("  ID:" + t.getId() +
+                    " | " + t.getTipo() +
+                    " | $" + t.getMonto() +
+                    " | " + t.getDescripcion() +
+                    " | " + t.getFecha());
+        }
+    }
+
+    // ==================== ELIMINAR TRANSACCION ====================
+
+    static void eliminarTransaccion() {
+        System.out.println("\n--- ELIMINAR TRANSACCION ---");
+        verTransacciones();
+        if (gestor.listarTransacciones().isEmpty()) return;
+
+        System.out.print("ID de la transaccion a eliminar: ");
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("ID invalido.");
+            return;
+        }
+
+        System.out.print("Seguro que deseas eliminar la transaccion " + id + "? (s/n): ");
+        String confirmacion = scanner.nextLine().trim();
+        if (confirmacion.equalsIgnoreCase("s")) {
+            gestor.eliminarTransaccion(id);
+        } else {
+            System.out.println("Operacion cancelada.");
         }
     }
 }
