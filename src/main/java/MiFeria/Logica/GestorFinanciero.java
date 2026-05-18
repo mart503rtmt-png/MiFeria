@@ -55,11 +55,11 @@ public class GestorFinanciero {
         return true;
     }
 
-    // Inicia sesion verificando correo y contrasena contra el archivo
-    public boolean iniciarSesion(String correo, String contrasena) {
-        Usuario encontrado = AlmacenamientoLocal.buscarUsuarioPorCorreo(correo);
-        if (encontrado != null && encontrado.validarContrasena(contrasena)) {
-            this.usuarioActivo = encontrado;
+    // Carga automaticamente el perfil guardado (app local)
+    public boolean cargarUsuarioGuardado() {
+        Usuario guardado = AlmacenamientoLocal.cargarPrimerUsuario();
+        if (guardado != null) {
+            this.usuarioActivo = guardado;
             return true;
         }
         return false;

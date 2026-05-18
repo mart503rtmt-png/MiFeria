@@ -18,74 +18,38 @@ public class Main {
         System.out.println("=================================");
         System.out.println("  Bienvenido a la App Financiera ");
         System.out.println("=================================");
-        menuAcceso();
+        iniciarApp();
     }
 
-    // ==================== MENU DE ACCESO ====================
+    // ==================== INICIO ====================
+    // Si ya hay un perfil guardado lo carga automaticamente.
+    // Si no, pide el nombre una sola vez para crear el perfil local.
 
-    static void menuAcceso() {
-        boolean corriendo = true;
-        while (corriendo) {
-            System.out.println("\n1. Registrarse");
-            System.out.println("2. Iniciar sesion");
-            System.out.println("3. Salir");
-            System.out.print("Elegir opcion: ");
-            String opcion = scanner.nextLine().trim();
-
-            switch (opcion) {
-                case "1": registrarse(); break;
-                case "2":
-                    if (iniciarSesion()) menuPrincipal();
-                    break;
-                case "3":
-                    System.out.println("Hasta luego!");
-                    corriendo = false;
-                    break;
-                default:
-                    System.out.println("Opcion no valida, intenta de nuevo.");
-            }
-        }
-    }
-
-    // ==================== REGISTRO ====================
-
-    static void registrarse() {
-        System.out.println("\n--- REGISTRO ---");
-
-        System.out.print("Nombre completo: ");
-        String nombre = scanner.nextLine().trim();
-
-        System.out.print("Correo: ");
-        String correo = scanner.nextLine().trim();
-
-        System.out.print("Contrasena: ");
-        String contrasena = scanner.nextLine().trim();
-
-        boolean registrado = gestor.registrarUsuario(nombre, correo, contrasena);
-        if (registrado) {
-            System.out.println("Cuenta creada. Ya puedes iniciar sesion.");
-        }
-    }
-
-    // ==================== LOGIN ====================
-
-    static boolean iniciarSesion() {
-        System.out.println("\n--- INICIAR SESION ---");
-
-        System.out.print("Correo: ");
-        String correo = scanner.nextLine().trim();
-
-        System.out.print("Contrasena: ");
-        String contrasena = scanner.nextLine().trim();
-
-        boolean ok = gestor.iniciarSesion(correo, contrasena);
-        if (ok) {
-            System.out.println("Bienvenido, " + gestor.getUsuarioActivo().getNombre() + "!");
-            return true;
+    static void iniciarApp() {
+        if (gestor.cargarUsuarioGuardado()) {
+            System.out.println("Hola de nuevo, " + gestor.getUsuarioActivo().getNombre() + "!");
+            menuPrincipal();
         } else {
-            System.out.println("Correo o contrasena incorrectos.");
-            return false;
+            crearPerfil();
+            menuPrincipal();
         }
+    }
+
+    // ==================== CREAR PERFIL (una sola vez) ====================
+
+    static void crearPerfil() {
+        System.out.println("\n--- CREAR PERFIL ---");
+
+        System.out.print("Tu nombre: ");
+        String nombre = scanner.nextLine().trim();
+        while (nombre.isEmpty()) {
+            System.out.print("El nombre no puede estar vacio. Tu nombre: ");
+            nombre = scanner.nextLine().trim();
+        }
+
+        gestor.registrarUsuario(nombre, "local", "local");
+        gestor.cargarUsuarioGuardado();
+        System.out.println("Perfil creado. Bienvenido, " + nombre + "!");
     }
 
     // ==================== MENU PRINCIPAL ====================
