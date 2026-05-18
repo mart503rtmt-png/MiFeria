@@ -96,18 +96,21 @@ public class Main {
 
     static void agregarTransaccion() {
         System.out.println("\n--- NUEVA TRANSACCION ---");
-        System.out.println("Tipo:");
-        System.out.println("1. Ingreso");
-        System.out.println("2. Gasto");
-        System.out.print("Elegir: ");
-        String tipoOpcion = scanner.nextLine().trim();
+        String tipoOpcion;
+        while (true) {
+            System.out.println("Tipo:");
+            System.out.println("1. Ingreso");
+            System.out.println("2. Gasto");
+            System.out.print("Elegir: ");
+            tipoOpcion = scanner.nextLine().trim();
+            if (tipoOpcion.equals("1") || tipoOpcion.equals("2")) break;
+            System.out.println("Error: opcion no valida, escribe 1 o 2.");
+        }
 
         if (tipoOpcion.equals("1")) {
             agregarIngreso();
-        } else if (tipoOpcion.equals("2")) {
-            agregarGasto();
         } else {
-            System.out.println("Opcion no valida.");
+            agregarGasto();
         }
     }
 
@@ -117,42 +120,41 @@ public class Main {
         System.out.println("\n--- NUEVO INGRESO ---");
 
         // Nombre del ingreso
-        System.out.print("Nombre del ingreso (ej: sueldo, freelance, venta): ");
-        String nombre = scanner.nextLine().trim();
-        while (nombre.isEmpty()) {
-            System.out.print("El nombre no puede estar vacio: ");
+        String nombre;
+        while (true) {
+            System.out.print("Nombre del ingreso (ej: sueldo, freelance, venta): ");
             nombre = scanner.nextLine().trim();
+            if (!nombre.isEmpty()) break;
+            System.out.println("Error: el nombre no puede estar vacio.");
         }
 
         // Monto
-        System.out.print("Monto ($): ");
         double monto;
-        try {
-            monto = Double.parseDouble(scanner.nextLine().trim());
-            if (monto <= 0) {
-                System.out.println("El monto debe ser mayor a 0.");
-                return;
+        while (true) {
+            System.out.print("Monto ($): ");
+            try {
+                monto = Double.parseDouble(scanner.nextLine().trim());
+                if (monto > 0) break;
+                System.out.println("Error: el monto debe ser mayor a 0.");
+            } catch (NumberFormatException e) {
+                System.out.println("Error: ingresa un numero valido. Ej: 500.00");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Monto invalido, debe ser un numero. Ej: 500.00");
-            return;
         }
 
         // Categoria de ingreso
-        System.out.println("Tipo de ingreso:");
-        System.out.println("  8. Ingreso Constante  (salario fijo, pension, renta...)");
-        System.out.println("  9. Ingreso Parcial    (freelance, venta ocasional, bono...)");
-        System.out.print("Elegir (8 o 9): ");
         int idCategoria;
-        try {
-            idCategoria = Integer.parseInt(scanner.nextLine().trim());
-            if (idCategoria != 8 && idCategoria != 9) {
-                System.out.println("Opcion no valida. Elige 8 o 9.");
-                return;
+        while (true) {
+            System.out.println("Tipo de ingreso:");
+            System.out.println("  8. Ingreso Constante  (salario fijo, pension, renta...)");
+            System.out.println("  9. Ingreso Parcial    (freelance, venta ocasional, bono...)");
+            System.out.print("Elegir (8 o 9): ");
+            try {
+                idCategoria = Integer.parseInt(scanner.nextLine().trim());
+                if (idCategoria == 8 || idCategoria == 9) break;
+                System.out.println("Error: opcion no valida, escribe 8 o 9.");
+            } catch (NumberFormatException e) {
+                System.out.println("Error: escribe 8 o 9.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Numero invalido.");
-            return;
         }
 
         gestor.agregarTransaccion(monto, nombre, "INGRESO", idCategoria);
@@ -165,43 +167,42 @@ public class Main {
         System.out.println("\n--- NUEVO GASTO ---");
 
         // Monto
-        System.out.print("Monto ($): ");
         double monto;
-        try {
-            monto = Double.parseDouble(scanner.nextLine().trim());
-            if (monto <= 0) {
-                System.out.println("El monto debe ser mayor a 0.");
-                return;
+        while (true) {
+            System.out.print("Monto ($): ");
+            try {
+                monto = Double.parseDouble(scanner.nextLine().trim());
+                if (monto > 0) break;
+                System.out.println("Error: el monto debe ser mayor a 0.");
+            } catch (NumberFormatException e) {
+                System.out.println("Error: ingresa un numero valido. Ej: 25.50");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Monto invalido, debe ser un numero. Ej: 25.50");
-            return;
         }
 
         // Descripcion
-        System.out.print("Descripcion (ej: compra del super): ");
-        String descripcion = scanner.nextLine().trim();
-        if (descripcion.isEmpty()) {
-            System.out.println("La descripcion no puede estar vacia.");
-            return;
+        String descripcion;
+        while (true) {
+            System.out.print("Descripcion (ej: compra del super): ");
+            descripcion = scanner.nextLine().trim();
+            if (!descripcion.isEmpty()) break;
+            System.out.println("Error: la descripcion no puede estar vacia.");
         }
 
-        // Categorias de gasto
-        System.out.println("Categoria:");
-        for (Categoria c : gestor.getCategoriasGasto()) {
-            System.out.println("  " + c.getId() + ". " + c.getNombre());
-        }
-        System.out.print("Numero de categoria: ");
+        // Categoria de gasto
         int idCategoria;
-        try {
-            idCategoria = Integer.parseInt(scanner.nextLine().trim());
-            if (gestor.buscarCategoriaPorId(idCategoria) == null || idCategoria > 7) {
-                System.out.println("Categoria no valida.");
-                return;
+        while (true) {
+            System.out.println("Categoria:");
+            for (Categoria c : gestor.getCategoriasGasto()) {
+                System.out.println("  " + c.getId() + ". " + c.getNombre());
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Numero invalido.");
-            return;
+            System.out.print("Numero de categoria: ");
+            try {
+                idCategoria = Integer.parseInt(scanner.nextLine().trim());
+                if (gestor.buscarCategoriaPorId(idCategoria) != null && idCategoria <= 7) break;
+                System.out.println("Error: categoria no valida, elige un numero de la lista.");
+            } catch (NumberFormatException e) {
+                System.out.println("Error: ingresa el numero de la categoria.");
+            }
         }
 
         gestor.agregarTransaccion(monto, descripcion, "GASTO", idCategoria);
@@ -246,22 +247,22 @@ public class Main {
 
     static void filtrarCategoria() {
         System.out.println("\n--- FILTRAR POR CATEGORIA ---");
-        for (Categoria c : gestor.getCategorias()) {
-            System.out.println("  " + c.getId() + ". " + c.getNombre());
-        }
-        System.out.print("Numero de categoria: ");
-        int id;
-        try {
-            id = Integer.parseInt(scanner.nextLine().trim());
-        } catch (NumberFormatException e) {
-            System.out.println("Numero invalido.");
-            return;
-        }
 
-        Categoria cat = gestor.buscarCategoriaPorId(id);
-        if (cat == null) {
-            System.out.println("Categoria no encontrada.");
-            return;
+        int id;
+        Categoria cat;
+        while (true) {
+            for (Categoria c : gestor.getCategorias()) {
+                System.out.println("  " + c.getId() + ". " + c.getNombre());
+            }
+            System.out.print("Numero de categoria: ");
+            try {
+                id = Integer.parseInt(scanner.nextLine().trim());
+                cat = gestor.buscarCategoriaPorId(id);
+                if (cat != null) break;
+                System.out.println("Error: categoria no encontrada, elige un numero de la lista.");
+            } catch (NumberFormatException e) {
+                System.out.println("Error: ingresa el numero de la categoria.");
+            }
         }
 
         System.out.println("Transacciones de: " + cat.getNombre());
@@ -286,18 +287,26 @@ public class Main {
         verTransacciones();
         if (gestor.listarTransacciones().isEmpty()) return;
 
-        System.out.print("ID de la transaccion a eliminar: ");
         int id;
-        try {
-            id = Integer.parseInt(scanner.nextLine().trim());
-        } catch (NumberFormatException e) {
-            System.out.println("ID invalido.");
-            return;
+        while (true) {
+            System.out.print("ID de la transaccion a eliminar: ");
+            try {
+                id = Integer.parseInt(scanner.nextLine().trim());
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Error: ingresa un ID valido (solo numeros).");
+            }
         }
 
-        System.out.print("Seguro que deseas eliminar la transaccion " + id + "? (s/n): ");
-        String confirmacion = scanner.nextLine().trim();
-        if (confirmacion.equalsIgnoreCase("s")) {
+        String confirmacion;
+        while (true) {
+            System.out.print("Seguro que deseas eliminar la transaccion " + id + "? (s/n): ");
+            confirmacion = scanner.nextLine().trim().toLowerCase();
+            if (confirmacion.equals("s") || confirmacion.equals("n")) break;
+            System.out.println("Error: escribe 's' para confirmar o 'n' para cancelar.");
+        }
+
+        if (confirmacion.equals("s")) {
             gestor.eliminarTransaccion(id);
         } else {
             System.out.println("Operacion cancelada.");
