@@ -131,4 +131,31 @@ public class AlmacenamientoLocal {
     public static boolean correoExiste(String correo) {
         return buscarUsuarioPorCorreo(correo) != null;
     }
+
+    // Sobreescribe el archivo de usuarios con un unico perfil
+    public static void guardarUsuarioUnico(Usuario u) {
+        try (FileWriter fw = new FileWriter(ARCHIVO_USUARIOS, false);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+            bw.write(u.aTexto());
+            bw.newLine();
+        } catch (IOException e) {
+            System.out.println("Error al guardar perfil: " + e.getMessage());
+        }
+    }
+
+    // Carga el primer usuario guardado (app local de un solo perfil)
+    public static Usuario cargarPrimerUsuario() {
+        File archivo = new File(ARCHIVO_USUARIOS);
+        if (!archivo.exists()) return null;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+            String linea = br.readLine();
+            if (linea != null && !linea.trim().isEmpty()) {
+                return Usuario.desdeTexto(linea.trim());
+            }
+        } catch (IOException e) {
+            System.out.println("Error al cargar usuario: " + e.getMessage());
+        }
+        return null;
+    }
 }

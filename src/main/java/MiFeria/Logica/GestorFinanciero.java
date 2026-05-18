@@ -55,11 +55,20 @@ public class GestorFinanciero {
         return true;
     }
 
-    // Inicia sesion verificando correo y contrasena contra el archivo
-    public boolean iniciarSesion(String correo, String contrasena) {
-        Usuario encontrado = AlmacenamientoLocal.buscarUsuarioPorCorreo(correo);
-        if (encontrado != null && encontrado.validarContrasena(contrasena)) {
-            this.usuarioActivo = encontrado;
+    // Guarda o reemplaza el perfil local con el nombre dado
+    public void guardarPerfil(String nombre) {
+        int id = (usuarioActivo != null) ? usuarioActivo.getId()
+                                        : (int)(Math.random() * 9000) + 1000;
+        Usuario perfil = new Usuario(id, nombre, "local", "local");
+        AlmacenamientoLocal.guardarUsuarioUnico(perfil);
+        this.usuarioActivo = perfil;
+    }
+
+    // Carga automaticamente el perfil guardado (app local)
+    public boolean cargarUsuarioGuardado() {
+        Usuario guardado = AlmacenamientoLocal.cargarPrimerUsuario();
+        if (guardado != null) {
+            this.usuarioActivo = guardado;
             return true;
         }
         return false;

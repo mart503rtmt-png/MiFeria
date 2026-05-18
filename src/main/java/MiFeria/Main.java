@@ -15,77 +15,47 @@ public class Main {
     static GestorFinanciero gestor = new GestorFinanciero();
 
     public static void main(String[] args) {
-        System.out.println("=================================");
-        System.out.println("  Bienvenido a la App Financiera ");
-        System.out.println("=================================");
-        menuAcceso();
+        pantallaBienvenida();
     }
 
-    // ==================== MENU DE ACCESO ====================
+    // ==================== PANTALLA DE BIENVENIDA ====================
 
-    static void menuAcceso() {
-        boolean corriendo = true;
-        while (corriendo) {
-            System.out.println("\n1. Registrarse");
-            System.out.println("2. Iniciar sesion");
-            System.out.println("3. Salir");
-            System.out.print("Elegir opcion: ");
-            String opcion = scanner.nextLine().trim();
+    static void pantallaBienvenida() {
+        System.out.println("╔═══════════════════════════════════╗");
+        System.out.println("║       MI FERIA - App Financiera   ║");
+        System.out.println("╚═══════════════════════════════════╝");
+        System.out.println();
 
-            switch (opcion) {
-                case "1": registrarse(); break;
-                case "2":
-                    if (iniciarSesion()) menuPrincipal();
-                    break;
-                case "3":
-                    System.out.println("Hasta luego!");
-                    corriendo = false;
-                    break;
-                default:
-                    System.out.println("Opcion no valida, intenta de nuevo.");
+        // Carga el nombre guardado para mostrarlo como sugerencia
+        gestor.cargarUsuarioGuardado();
+        String nombreGuardado = (gestor.getUsuarioActivo() != null)
+                ? gestor.getUsuarioActivo().getNombre()
+                : "";
+
+        String nombre;
+        if (!nombreGuardado.isEmpty()) {
+            System.out.println("Usuario anterior: " + nombreGuardado);
+            System.out.print("Ingresa tu nombre (Enter para continuar como \"" + nombreGuardado + "\"): ");
+            String entrada = scanner.nextLine().trim();
+            nombre = entrada.isEmpty() ? nombreGuardado : entrada;
+        } else {
+            System.out.print("Ingresa tu nombre para comenzar: ");
+            nombre = scanner.nextLine().trim();
+            while (nombre.isEmpty()) {
+                System.out.print("El nombre no puede estar vacio: ");
+                nombre = scanner.nextLine().trim();
             }
         }
-    }
 
-    // ==================== REGISTRO ====================
-
-    static void registrarse() {
-        System.out.println("\n--- REGISTRO ---");
-
-        System.out.print("Nombre completo: ");
-        String nombre = scanner.nextLine().trim();
-
-        System.out.print("Correo: ");
-        String correo = scanner.nextLine().trim();
-
-        System.out.print("Contrasena: ");
-        String contrasena = scanner.nextLine().trim();
-
-        boolean registrado = gestor.registrarUsuario(nombre, correo, contrasena);
-        if (registrado) {
-            System.out.println("Cuenta creada. Ya puedes iniciar sesion.");
+        // Si el nombre cambio, guarda el nuevo perfil
+        if (!nombre.equals(nombreGuardado)) {
+            gestor.guardarPerfil(nombre);
         }
-    }
 
-    // ==================== LOGIN ====================
-
-    static boolean iniciarSesion() {
-        System.out.println("\n--- INICIAR SESION ---");
-
-        System.out.print("Correo: ");
-        String correo = scanner.nextLine().trim();
-
-        System.out.print("Contrasena: ");
-        String contrasena = scanner.nextLine().trim();
-
-        boolean ok = gestor.iniciarSesion(correo, contrasena);
-        if (ok) {
-            System.out.println("Bienvenido, " + gestor.getUsuarioActivo().getNombre() + "!");
-            return true;
-        } else {
-            System.out.println("Correo o contrasena incorrectos.");
-            return false;
-        }
+        System.out.println();
+        System.out.println("Bienvenido, " + nombre + "!");
+        System.out.println("───────────────────────────────────");
+        menuPrincipal();
     }
 
     // ==================== MENU PRINCIPAL ====================
