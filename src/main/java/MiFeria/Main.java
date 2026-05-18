@@ -96,25 +96,75 @@ public class Main {
 
     static void agregarTransaccion() {
         System.out.println("\n--- NUEVA TRANSACCION ---");
-
-        // Elegir tipo
         System.out.println("Tipo:");
         System.out.println("1. Ingreso");
         System.out.println("2. Gasto");
         System.out.print("Elegir: ");
         String tipoOpcion = scanner.nextLine().trim();
 
-        String tipo;
         if (tipoOpcion.equals("1")) {
-            tipo = "INGRESO";
+            agregarIngreso();
         } else if (tipoOpcion.equals("2")) {
-            tipo = "GASTO";
+            agregarGasto();
         } else {
             System.out.println("Opcion no valida.");
+        }
+    }
+
+    // ==================== AGREGAR INGRESO ====================
+
+    static void agregarIngreso() {
+        System.out.println("\n--- NUEVO INGRESO ---");
+
+        // Nombre del ingreso
+        System.out.print("Nombre del ingreso (ej: sueldo, freelance, venta): ");
+        String nombre = scanner.nextLine().trim();
+        while (nombre.isEmpty()) {
+            System.out.print("El nombre no puede estar vacio: ");
+            nombre = scanner.nextLine().trim();
+        }
+
+        // Monto
+        System.out.print("Monto ($): ");
+        double monto;
+        try {
+            monto = Double.parseDouble(scanner.nextLine().trim());
+            if (monto <= 0) {
+                System.out.println("El monto debe ser mayor a 0.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Monto invalido, debe ser un numero. Ej: 500.00");
             return;
         }
 
-        // Ingresar monto
+        // Categoria de ingreso
+        System.out.println("Tipo de ingreso:");
+        System.out.println("  8. Ingreso Constante  (salario fijo, pension, renta...)");
+        System.out.println("  9. Ingreso Parcial    (freelance, venta ocasional, bono...)");
+        System.out.print("Elegir (8 o 9): ");
+        int idCategoria;
+        try {
+            idCategoria = Integer.parseInt(scanner.nextLine().trim());
+            if (idCategoria != 8 && idCategoria != 9) {
+                System.out.println("Opcion no valida. Elige 8 o 9.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Numero invalido.");
+            return;
+        }
+
+        gestor.agregarTransaccion(monto, nombre, "INGRESO", idCategoria);
+        System.out.println("Ingreso guardado correctamente.");
+    }
+
+    // ==================== AGREGAR GASTO ====================
+
+    static void agregarGasto() {
+        System.out.println("\n--- NUEVO GASTO ---");
+
+        // Monto
         System.out.print("Monto ($): ");
         double monto;
         try {
@@ -128,7 +178,7 @@ public class Main {
             return;
         }
 
-        // Ingresar descripcion
+        // Descripcion
         System.out.print("Descripcion (ej: compra del super): ");
         String descripcion = scanner.nextLine().trim();
         if (descripcion.isEmpty()) {
@@ -136,16 +186,16 @@ public class Main {
             return;
         }
 
-        // Mostrar categorias y elegir
-        System.out.println("Categorias:");
-        for (Categoria c : gestor.getCategorias()) {
+        // Categorias de gasto
+        System.out.println("Categoria:");
+        for (Categoria c : gestor.getCategoriasGasto()) {
             System.out.println("  " + c.getId() + ". " + c.getNombre());
         }
         System.out.print("Numero de categoria: ");
         int idCategoria;
         try {
             idCategoria = Integer.parseInt(scanner.nextLine().trim());
-            if (gestor.buscarCategoriaPorId(idCategoria) == null) {
+            if (gestor.buscarCategoriaPorId(idCategoria) == null || idCategoria > 7) {
                 System.out.println("Categoria no valida.");
                 return;
             }
@@ -154,8 +204,8 @@ public class Main {
             return;
         }
 
-        gestor.agregarTransaccion(monto, descripcion, tipo, idCategoria);
-        System.out.println("Transaccion guardada correctamente.");
+        gestor.agregarTransaccion(monto, descripcion, "GASTO", idCategoria);
+        System.out.println("Gasto guardado correctamente.");
     }
 
     // ==================== VER TRANSACCIONES ====================

@@ -92,6 +92,7 @@ public class GestorFinanciero {
     }
 
     public void cargarCategoriasPorDefecto() {
+        // Categorias de gastos (ids 1-7)
         agregarCategoria(new Categoria(1, "Alimentacion",    "#4CAF50"));
         agregarCategoria(new Categoria(2, "Transporte",      "#2196F3"));
         agregarCategoria(new Categoria(3, "Salud",           "#F44336"));
@@ -99,6 +100,28 @@ public class GestorFinanciero {
         agregarCategoria(new Categoria(5, "Salario",         "#FF9800"));
         agregarCategoria(new Categoria(6, "Servicios",       "#607D8B"));
         agregarCategoria(new Categoria(7, "Otros",           "#795548"));
+
+        // Categorias de ingresos (ids 8-9)
+        agregarCategoria(new Categoria(8, "Ingreso Constante", "#00BCD4"));
+        agregarCategoria(new Categoria(9, "Ingreso Parcial",   "#8BC34A"));
+    }
+
+    // Devuelve solo las categorias de ingresos
+    public List<Categoria> getCategoriasIngreso() {
+        List<Categoria> resultado = new ArrayList<>();
+        for (Categoria c : categorias) {
+            if (c.getId() == 8 || c.getId() == 9) resultado.add(c);
+        }
+        return resultado;
+    }
+
+    // Devuelve solo las categorias de gastos
+    public List<Categoria> getCategoriasGasto() {
+        List<Categoria> resultado = new ArrayList<>();
+        for (Categoria c : categorias) {
+            if (c.getId() >= 1 && c.getId() <= 7) resultado.add(c);
+        }
+        return resultado;
     }
 
     // ==================== TRANSACCIONES ====================
