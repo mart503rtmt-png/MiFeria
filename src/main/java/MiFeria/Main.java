@@ -15,41 +15,47 @@ public class Main {
     static GestorFinanciero gestor = new GestorFinanciero();
 
     public static void main(String[] args) {
-        System.out.println("=================================");
-        System.out.println("  Bienvenido a la App Financiera ");
-        System.out.println("=================================");
-        iniciarApp();
+        pantallaBienvenida();
     }
 
-    // ==================== INICIO ====================
-    // Si ya hay un perfil guardado lo carga automaticamente.
-    // Si no, pide el nombre una sola vez para crear el perfil local.
+    // ==================== PANTALLA DE BIENVENIDA ====================
 
-    static void iniciarApp() {
-        if (gestor.cargarUsuarioGuardado()) {
-            System.out.println("Hola de nuevo, " + gestor.getUsuarioActivo().getNombre() + "!");
-            menuPrincipal();
-        } else {
-            crearPerfil();
-            menuPrincipal();
-        }
-    }
+    static void pantallaBienvenida() {
+        System.out.println("╔═══════════════════════════════════╗");
+        System.out.println("║       MI FERIA - App Financiera   ║");
+        System.out.println("╚═══════════════════════════════════╝");
+        System.out.println();
 
-    // ==================== CREAR PERFIL (una sola vez) ====================
-
-    static void crearPerfil() {
-        System.out.println("\n--- CREAR PERFIL ---");
-
-        System.out.print("Tu nombre: ");
-        String nombre = scanner.nextLine().trim();
-        while (nombre.isEmpty()) {
-            System.out.print("El nombre no puede estar vacio. Tu nombre: ");
-            nombre = scanner.nextLine().trim();
-        }
-
-        gestor.registrarUsuario(nombre, "local", "local");
+        // Carga el nombre guardado para mostrarlo como sugerencia
         gestor.cargarUsuarioGuardado();
-        System.out.println("Perfil creado. Bienvenido, " + nombre + "!");
+        String nombreGuardado = (gestor.getUsuarioActivo() != null)
+                ? gestor.getUsuarioActivo().getNombre()
+                : "";
+
+        String nombre;
+        if (!nombreGuardado.isEmpty()) {
+            System.out.println("Usuario anterior: " + nombreGuardado);
+            System.out.print("Ingresa tu nombre (Enter para continuar como \"" + nombreGuardado + "\"): ");
+            String entrada = scanner.nextLine().trim();
+            nombre = entrada.isEmpty() ? nombreGuardado : entrada;
+        } else {
+            System.out.print("Ingresa tu nombre para comenzar: ");
+            nombre = scanner.nextLine().trim();
+            while (nombre.isEmpty()) {
+                System.out.print("El nombre no puede estar vacio: ");
+                nombre = scanner.nextLine().trim();
+            }
+        }
+
+        // Si el nombre cambio, guarda el nuevo perfil
+        if (!nombre.equals(nombreGuardado)) {
+            gestor.guardarPerfil(nombre);
+        }
+
+        System.out.println();
+        System.out.println("Bienvenido, " + nombre + "!");
+        System.out.println("───────────────────────────────────");
+        menuPrincipal();
     }
 
     // ==================== MENU PRINCIPAL ====================

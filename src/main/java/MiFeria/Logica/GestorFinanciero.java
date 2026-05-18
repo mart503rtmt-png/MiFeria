@@ -55,6 +55,15 @@ public class GestorFinanciero {
         return true;
     }
 
+    // Guarda o reemplaza el perfil local con el nombre dado
+    public void guardarPerfil(String nombre) {
+        int id = (usuarioActivo != null) ? usuarioActivo.getId()
+                                        : (int)(Math.random() * 9000) + 1000;
+        Usuario perfil = new Usuario(id, nombre, "local", "local");
+        AlmacenamientoLocal.guardarUsuarioUnico(perfil);
+        this.usuarioActivo = perfil;
+    }
+
     // Carga automaticamente el perfil guardado (app local)
     public boolean cargarUsuarioGuardado() {
         Usuario guardado = AlmacenamientoLocal.cargarPrimerUsuario();
