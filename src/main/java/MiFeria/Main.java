@@ -27,9 +27,9 @@ public class Main {
         System.out.println();
 
         // Carga el nombre guardado para mostrarlo como sugerencia
-        gestor.cargarUsuarioGuardado();
-        String nombreGuardado = (gestor.getUsuarioActivo() != null)
-                ? gestor.getUsuarioActivo().getNombre()
+        gestor.cargarPerfilGuardado();
+        String nombreGuardado = (gestor.getNombreActivo() != null)
+                ? gestor.getNombreActivo()
                 : "";
 
         String nombre;
@@ -64,7 +64,7 @@ public class Main {
         boolean corriendo = true;
         while (corriendo) {
             System.out.println("\n=== MENU PRINCIPAL ===");
-            System.out.println("Usuario: " + gestor.getUsuarioActivo().getNombre());
+            System.out.println("Usuario: " + gestor.getNombreActivo());
             System.out.println("----------------------");
             System.out.println("1. Agregar transaccion");
             System.out.println("2. Ver todas mis transacciones");

@@ -2,7 +2,6 @@ package MiFeria.Logica;
 
 import MiFeria.Modelo.Categoria;
 import MiFeria.Modelo.Transaccion;
-import MiFeria.Modelo.Usuario;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,12 +14,12 @@ public class GestorFinanciero {
 
     private List<Transaccion> transacciones;
     private List<Categoria>   categorias;
-    private Usuario           usuarioActivo;
+    private String            nombreActivo;
     private int               contadorId;
 
     public GestorFinanciero() {
-        this.categorias    = new ArrayList<>();
-        this.usuarioActivo = null;
+        this.categorias   = new ArrayList<>();
+        this.nombreActivo = null;
 
         // Carga transacciones guardadas al iniciar
         this.transacciones = AlmacenamientoLocal.cargarTransacciones();
@@ -40,43 +39,27 @@ public class GestorFinanciero {
         return maxId;
     }
 
-    // ==================== USUARIO ====================
+    // ==================== PERFIL ====================
 
-    // Registra un usuario nuevo y lo guarda en el archivo
-    public boolean registrarUsuario(String nombre, String correo, String contrasena) {
-        if (AlmacenamientoLocal.correoExiste(correo)) {
-            System.out.println("Ese correo ya esta registrado.");
-            return false;
-        }
-        int nuevoId = (int)(Math.random() * 9000) + 1000;
-        Usuario nuevo = new Usuario(nuevoId, nombre, correo, contrasena);
-        AlmacenamientoLocal.guardarUsuario(nuevo);
-        System.out.println("Usuario registrado: " + nombre);
-        return true;
-    }
-
-    // Guarda o reemplaza el perfil local con el nombre dado
+    // Guarda el nombre en archivo y lo activa
     public void guardarPerfil(String nombre) {
-        int id = (usuarioActivo != null) ? usuarioActivo.getId()
-                                        : (int)(Math.random() * 9000) + 1000;
-        Usuario perfil = new Usuario(id, nombre, "local", "local");
-        AlmacenamientoLocal.guardarUsuarioUnico(perfil);
-        this.usuarioActivo = perfil;
+        AlmacenamientoLocal.guardarNombre(nombre);
+        this.nombreActivo = nombre;
     }
 
-    // Carga automaticamente el perfil guardado (app local)
-    public boolean cargarUsuarioGuardado() {
-        Usuario guardado = AlmacenamientoLocal.cargarPrimerUsuario();
-        if (guardado != null) {
-            this.usuarioActivo = guardado;
+    // Carga el nombre guardado desde archivo
+    public boolean cargarPerfilGuardado() {
+        String nombre = AlmacenamientoLocal.cargarNombre();
+        if (nombre != null) {
+            this.nombreActivo = nombre;
             return true;
         }
         return false;
     }
 
-    public void cerrarSesion() { this.usuarioActivo = null; }
+    public String getNombreActivo() { return nombreActivo; }
 
-    public Usuario getUsuarioActivo() { return usuarioActivo; }
+    public void cerrarSesion() { this.nombreActivo = null; }
 
     // ==================== CATEGORIAS ====================
 
