@@ -2,6 +2,7 @@ package MiFeria.Logica;
 
 import MiFeria.Modelo.Categoria;
 import MiFeria.Modelo.Transaccion;
+import MiFeria.Modelo.Meta;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -150,6 +151,69 @@ public class GestorFinanciero {
         for (Transaccion t : transacciones)
             if (t.getIdCategoria() == idCategoria) resultado.add(t);
         return resultado;
+    }
+
+    // ==================== METAS ====================
+
+    private List<Meta> metas = AlmacenamientoLocal.cargarMetas();
+
+    private int calcularUltimoIdMeta() {
+        int maxId = 0;
+        for (Meta m : metas) {
+            if (m.getId() > maxId) maxId = m.getId();
+        }
+        return maxId;
+    }
+
+    public void crearMeta(String nombre, double montoObjetivo) {
+        int nuevoId = calcularUltimoIdMeta() + 1;
+        Meta nuevaMeta = new Meta(nuevoId, nombre, montoObjetivo, 0.0);
+        metas.add(nuevaMeta);
+        AlmacenamientoLocal.guardarMeta(nuevaMeta);
+        System.out.println("Meta creada exitosamente.");
+    }
+
+    public void abonarAMeta(int idMeta, double monto) {
+        // Verificar que el balance sea suficiente
+        double balance = calcularBalance();
+        if (monto > balance) {
+            System.out.println("No tenés suficiente balance para abonar ese monto.");
+            System.out.println("Tu balance actual es: $" + balance);
+            return;
+        }
+
+        // Buscar la meta
+        for (Meta m : metas) {
+            if (m.getId() == idMeta) {
+                double nuevoMonto = m.getMontoActual() + monto;
+
+                // Verificar que no se pase del objetivo
+                if (nuevoMonto > m.getMontoObjetivo()) {
+                    System.out.println("Ese monto supera el objetivo de la meta.");
+                    System.out.println("Maximo que podés abonar: $" + (m.getMontoObjetivo() - m.getMontoActual()));
+                    return;
+                }
+
+                m.setMontoActual(nuevoMonto);
+                AlmacenamientoLocal.guardarTodasLasMetas(metas);
+
+                // Registrar como gasto para descontarlo del balance
+                agregarTransaccion(monto, "Abono a meta: " + m.getNombre(), "GASTO", 0);
+
+                System.out.println("Abono realizado exitosamente.");
+
+                // Verificar si se completo la meta
+                if (nuevoMonto == m.getMontoObjetivo()) {
+                    System.out.println("¡Felicidades! Completaste tu meta: " + m.getNombre());
+                }
+                return;
+            }
+        }
+        System.out.println("No se encontró una meta con ese ID.");
+    }
+
+    public List<Meta> listarMetas() {
+        return metas;
     }
 
     // ==================== CALCULOS ====================

@@ -1,6 +1,7 @@
 package MiFeria.Logica;
 
 import MiFeria.Modelo.Transaccion;
+import MiFeria.Modelo.Meta;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ public class AlmacenamientoLocal {
 
     private static final String ARCHIVO_TRANSACCIONES = "transacciones.csv";
     private static final String ARCHIVO_PERFIL        = "perfil.txt";
+    private static final String ARCHIVO_METAS = "metas.csv";
 
     // ==================== TRANSACCIONES ====================
 
@@ -88,6 +90,73 @@ public class AlmacenamientoLocal {
             }
         } catch (IOException e) {
             System.out.println("Error al eliminar transaccion: " + e.getMessage());
+        }
+    }
+
+    // ==================== METAS ====================
+
+    // Carga todas las metas desde el archivo
+    public static List<Meta> cargarMetas() {
+        List<Meta> lista = new ArrayList<>();
+        File archivo = new File(ARCHIVO_METAS);
+
+        if (!archivo.exists()) return lista;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                if (linea.trim().isEmpty()) continue;
+
+                String[] partes = linea.split(",");
+                Meta m = new Meta(
+                        Integer.parseInt(partes[0]),
+                        partes[1],
+                        Double.parseDouble(partes[2]),
+                        Double.parseDouble(partes[3])
+                );
+                lista.add(m);
+            }
+        } catch (IOException e) {
+            System.out.println("Error al cargar metas: " + e.getMessage());
+        }
+
+        return lista;
+    }
+
+    // Guarda una meta nueva al final del archivo
+    public static void guardarMeta(Meta m) {
+        try (FileWriter fw = new FileWriter(ARCHIVO_METAS, true);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+
+            // Formato: id,nombre,montoObjetivo,montoActual
+            String linea = m.getId() + "," +
+                    m.getNombre() + "," +
+                    m.getMontoObjetivo() + "," +
+                    m.getMontoActual();
+            bw.write(linea);
+            bw.newLine();
+
+        } catch (IOException e) {
+            System.out.println("Error al guardar meta: " + e.getMessage());
+        }
+    }
+
+    // Sobreescribe todas las metas (necesario para cuando se abona a una meta)
+    public static void guardarTodasLasMetas(List<Meta> metas) {
+        try (FileWriter fw = new FileWriter(ARCHIVO_METAS, false);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+
+            for (Meta m : metas) {
+                String linea = m.getId() + "," +
+                        m.getNombre() + "," +
+                        m.getMontoObjetivo() + "," +
+                        m.getMontoActual();
+                bw.write(linea);
+                bw.newLine();
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error al actualizar metas: " + e.getMessage());
         }
     }
 

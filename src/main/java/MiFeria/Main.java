@@ -3,8 +3,10 @@ package MiFeria;
 import MiFeria.Logica.GestorFinanciero;
 import MiFeria.Modelo.Categoria;
 import MiFeria.Modelo.Transaccion;
+import MiFeria.Modelo.Meta;
 
 import java.util.Scanner;
+import java.util.List;
 
 // Main con menu interactivo: el usuario escribe todos los datos
 // No hay nada hardcodeado, todo lo ingresa el usuario desde el teclado
@@ -71,7 +73,8 @@ public class Main {
             System.out.println("3. Ver resumen (balance)");
             System.out.println("4. Filtrar por categoria");
             System.out.println("5. Eliminar transaccion");
-            System.out.println("6. Cerrar sesion");
+            System.out.println("6. Metas de ahorro");
+            System.out.println("7. Cerrar sesion");
             System.out.print("Elegir opcion: ");
             String opcion = scanner.nextLine().trim();
 
@@ -81,7 +84,9 @@ public class Main {
                 case "3": verResumen();          break;
                 case "4": filtrarCategoria();    break;
                 case "5": eliminarTransaccion(); break;
-                case "6":
+                case "6": menuMetas(); break;
+
+                case "7":
                     gestor.cerrarSesion();
                     System.out.println("Sesion cerrada.");
                     corriendo = false;
@@ -310,6 +315,125 @@ public class Main {
             gestor.eliminarTransaccion(id);
         } else {
             System.out.println("Operacion cancelada.");
+        }
+    }
+
+    // ====================== METAS DE AHORRO ======================
+
+    static void menuMetas() {
+        boolean corriendo = true;
+        while (corriendo) {
+            System.out.println("\n=== METAS DE AHORRO ===");
+            System.out.println("1. Crear meta");
+            System.out.println("2. Abonar a una meta");
+            System.out.println("3. Ver mis metas");
+            System.out.println("4. Volver al menu principal");
+            System.out.print("Elegir opcion: ");
+            String opcion = scanner.nextLine().trim();
+
+            switch (opcion) {
+                case "1": crearMeta(); break;
+                case "2": abonarMeta(); break;
+                case "3": verMetas(); break;
+                case "4": corriendo = false; break;
+                default: System.out.println("Opcion no valida."); break;
+            }
+        }
+    }
+
+    static void crearMeta() {
+        System.out.println("\n=== CREAR META ===");
+
+        // Nombre
+        System.out.print("Nombre de la meta: ");
+        String nombre = scanner.nextLine().trim();
+        if (nombre.isEmpty()) {
+            System.out.println("El nombre no puede estar vacio.");
+            return;
+        }
+
+        // Monto objetivo
+        double montoObjetivo = 0;
+        boolean montoValido = false;
+        while (!montoValido) {
+            System.out.print("Monto objetivo: $");
+            String input = scanner.nextLine().trim();
+            try {
+                montoObjetivo = Double.parseDouble(input);
+                if (montoObjetivo <= 0) {
+                    System.out.println("El monto debe ser mayor a 0.");
+                } else {
+                    montoValido = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Ingresa un numero valido.");
+            }
+        }
+
+        gestor.crearMeta(nombre, montoObjetivo);
+    }
+
+    static void abonarMeta() {
+        System.out.println("\n=== ABONAR A META ===");
+
+        List<Meta> metas = gestor.listarMetas();
+        if (metas.isEmpty()) {
+            System.out.println("No tenés metas creadas.");
+            return;
+        }
+
+        // Mostrar metas disponibles
+        System.out.println("Tus metas:");
+        for (Meta m : metas) {
+            System.out.println(m);
+        }
+
+        // ID de la meta
+        int idMeta = 0;
+        boolean idValido = false;
+        while (!idValido) {
+            System.out.print("ID de la meta a abonar: ");
+            String input = scanner.nextLine().trim();
+            try {
+                idMeta = Integer.parseInt(input);
+                idValido = true;
+            } catch (NumberFormatException e) {
+                System.out.println("Ingresa un numero valido.");
+            }
+        }
+
+        // Monto a abonar
+        double monto = 0;
+        boolean montoValido = false;
+        while (!montoValido) {
+            System.out.print("Monto a abonar: $");
+            String input = scanner.nextLine().trim();
+            try {
+                monto = Double.parseDouble(input);
+                if (monto <= 0) {
+                    System.out.println("El monto debe ser mayor a 0.");
+                } else {
+                    montoValido = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Ingresa un numero valido.");
+            }
+        }
+
+        gestor.abonarAMeta(idMeta, monto);
+    }
+
+    static void verMetas() {
+        System.out.println("\n=== MIS METAS ===");
+
+        List<Meta> metas = gestor.listarMetas();
+        if (metas.isEmpty()) {
+            System.out.println("No tenés metas creadas.");
+            return;
+        }
+
+        for (Meta m : metas) {
+            System.out.println(m);
         }
     }
 }
