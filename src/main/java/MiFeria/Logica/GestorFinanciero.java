@@ -64,9 +64,7 @@ public class GestorFinanciero {
 
     // ==================== CATEGORIAS ====================
 
-    public void agregarCategoria(Categoria c) { categorias.add(c); }
-
-    public List<Categoria> getCategorias() { return categorias; }
+    private void agregarCategoria(Categoria c) { categorias.add(c); }
 
     public Categoria buscarCategoriaPorId(int id) {
         for (Categoria c : categorias) {
@@ -77,26 +75,17 @@ public class GestorFinanciero {
 
     public void cargarCategoriasPorDefecto() {
         // Categorias de gastos (ids 1-7)
-        agregarCategoria(new Categoria(1, "Alimentacion",    "#4CAF50"));
-        agregarCategoria(new Categoria(2, "Transporte",      "#2196F3"));
-        agregarCategoria(new Categoria(3, "Salud",           "#F44336"));
-        agregarCategoria(new Categoria(4, "Entretenimiento", "#9C27B0"));
-        agregarCategoria(new Categoria(5, "Salario",         "#FF9800"));
-        agregarCategoria(new Categoria(6, "Servicios",       "#607D8B"));
-        agregarCategoria(new Categoria(7, "Otros",           "#795548"));
+        agregarCategoria(new Categoria(1, "Alimentacion"));
+        agregarCategoria(new Categoria(2, "Transporte"));
+        agregarCategoria(new Categoria(3, "Salud"));
+        agregarCategoria(new Categoria(4, "Entretenimiento"));
+        agregarCategoria(new Categoria(5, "Salario"));
+        agregarCategoria(new Categoria(6, "Servicios"));
+        agregarCategoria(new Categoria(7, "Otros"));
 
         // Categorias de ingresos (ids 8-9)
-        agregarCategoria(new Categoria(8, "Ingreso Constante", "#00BCD4"));
-        agregarCategoria(new Categoria(9, "Ingreso Parcial",   "#8BC34A"));
-    }
-
-    // Devuelve solo las categorias de ingresos
-    public List<Categoria> getCategoriasIngreso() {
-        List<Categoria> resultado = new ArrayList<>();
-        for (Categoria c : categorias) {
-            if (c.getId() == 8 || c.getId() == 9) resultado.add(c);
-        }
-        return resultado;
+        agregarCategoria(new Categoria(8, "Ingreso Constante"));
+        agregarCategoria(new Categoria(9, "Ingreso Parcial"));
     }
 
     // Devuelve solo las categorias de gastos

@@ -236,75 +236,6 @@ public class Main {
         }
     }
 
-    // ==================== AGREGAR TRANSACCION ====================
-
-    static void agregarTransaccion() {
-        System.out.println("\n--- NUEVA TRANSACCION ---");
-        String tipoOpcion;
-        while (true) {
-            System.out.println("Tipo:");
-            System.out.println("1. Ingreso");
-            System.out.println("2. Gasto");
-            System.out.print("Elegir: ");
-            tipoOpcion = scanner.nextLine().trim();
-            if (tipoOpcion.equals("1") || tipoOpcion.equals("2")) break;
-            System.out.println("Error: opcion no valida, escribe 1 o 2.");
-        }
-
-        if (tipoOpcion.equals("1")) {
-            agregarIngreso();
-        } else {
-            agregarGasto();
-        }
-    }
-
-    // ==================== AGREGAR INGRESO ====================
-
-    static void agregarIngreso() {
-        System.out.println("\n--- NUEVO INGRESO ---");
-
-        // Nombre del ingreso
-        String nombre;
-        while (true) {
-            System.out.print("Nombre del ingreso (ej: sueldo, freelance, venta): ");
-            nombre = scanner.nextLine().trim();
-            if (!nombre.isEmpty()) break;
-            System.out.println("Error: el nombre no puede estar vacio.");
-        }
-
-        // Monto
-        double monto;
-        while (true) {
-            System.out.print("Monto ($): ");
-            try {
-                monto = Double.parseDouble(scanner.nextLine().trim());
-                if (monto > 0) break;
-                System.out.println("Error: el monto debe ser mayor a 0.");
-            } catch (NumberFormatException e) {
-                System.out.println("Error: ingresa un numero valido. Ej: 500.00");
-            }
-        }
-
-        // Categoria de ingreso
-        int idCategoria;
-        while (true) {
-            System.out.println("Tipo de ingreso:");
-            System.out.println("  8. Ingreso Constante  (salario fijo, pension, renta...)");
-            System.out.println("  9. Ingreso Parcial    (freelance, venta ocasional, bono...)");
-            System.out.print("Elegir (8 o 9): ");
-            try {
-                idCategoria = Integer.parseInt(scanner.nextLine().trim());
-                if (idCategoria == 8 || idCategoria == 9) break;
-                System.out.println("Error: opcion no valida, escribe 8 o 9.");
-            } catch (NumberFormatException e) {
-                System.out.println("Error: escribe 8 o 9.");
-            }
-        }
-
-        gestor.agregarTransaccion(monto, nombre, "INGRESO", idCategoria);
-        System.out.println("Ingreso guardado correctamente.");
-    }
-
     // ==================== AGREGAR GASTO ====================
 
     static void agregarGasto() {
@@ -417,27 +348,6 @@ public class Main {
             gestor.eliminarTransaccion(id);
         } else {
             System.out.println("Operacion cancelada.");
-        }
-    }
-
-    // ====================== METAS DE AHORRO ======================
-
-    static void menuMetas() {
-        boolean corriendo = true;
-        while (corriendo) {
-            System.out.println("\n=== METAS DE AHORRO ===");
-            System.out.println("1. Crear meta");
-            System.out.println("2. Abonar a una meta");
-            System.out.println("3. Volver al menu principal");
-            System.out.print("Elegir opcion: ");
-            String opcion = scanner.nextLine().trim();
-
-            switch (opcion) {
-                case "1": crearMeta(); break;
-                case "2": abonarMeta(); break;
-                case "3": corriendo = false; break;
-                default: System.out.println("Opcion no valida."); break;
-            }
         }
     }
 
@@ -737,11 +647,4 @@ public class Main {
         }
     }
 
-    private static String generarBarra(double porcentaje) {
-        int llenas = (int) (porcentaje / 10);
-        StringBuilder barra = new StringBuilder("[");
-        for (int i = 0; i < 10; i++) barra.append(i < llenas ? "█" : "░");
-        barra.append("]");
-        return barra.toString();
-    }
 }
