@@ -130,6 +130,19 @@ public class GestorFinanciero {
         System.out.println("Eliminada transaccion id: " + id);
     }
 
+    // Borra todos los ingresos constantes anteriores y registra el nuevo monto
+    public void actualizarIngresoConstante(double monto) {
+        List<Transaccion> aEliminar = new ArrayList<>();
+        for (Transaccion t : transacciones) {
+            if (t.getIdCategoria() == 8) aEliminar.add(t);
+        }
+        for (Transaccion t : aEliminar) {
+            transacciones.remove(t);
+            AlmacenamientoLocal.eliminarTransaccion(t.getId());
+        }
+        agregarTransaccion(monto, "Ingreso mensual fijo", "INGRESO", 8);
+    }
+
     public List<Transaccion> listarTransacciones() { return transacciones; }
 
     public List<Transaccion> listarIngresos() {
@@ -210,6 +223,24 @@ public class GestorFinanciero {
             }
         }
         System.out.println("No se encontró una meta con ese ID.");
+    }
+
+    public void retirarDeMeta(int idMeta, double monto) {
+        for (Meta m : metas) {
+            if (m.getId() == idMeta) {
+                if (monto > m.getMontoActual()) {
+                    System.out.println("No puedes retirar mas de lo que tiene la meta.");
+                    System.out.println("Disponible en meta: $" + m.getMontoActual());
+                    return;
+                }
+                m.setMontoActual(m.getMontoActual() - monto);
+                AlmacenamientoLocal.guardarTodasLasMetas(metas);
+                agregarTransaccion(monto, "Retiro de meta: " + m.getNombre(), "INGRESO", 8);
+                System.out.println("Retiro realizado. El monto volvio a tu balance.");
+                return;
+            }
+        }
+        System.out.println("No se encontro una meta con ese ID.");
     }
 
     public List<Meta> listarMetas() {
